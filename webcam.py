@@ -15,8 +15,8 @@ import os
 parser = argparse.ArgumentParser()
 parser.add_argument('-src', '--source', dest='video_source', type=int,
                     default=0, help='Device index of the camera.')
-parser.add_argument('--checkpoint', type=str, help='Checkpoint directory', default='kanagawa')
-parser.add_argument('-d', '--downsample', type=float, default=1, help='Downsample factor before face detection')
+parser.add_argument('--checkpoint', type=str, help='Checkpoint directory', default='models/kanagawa')
+parser.add_argument('-d', '--downsample', type=float, default=1, help='Downsample factor')
 parser.add_argument('--video', type=str, help="Stream from input video file", default=None)
 parser.add_argument('--video-out', type=str, help="Save to output video file", default=None)
 parser.add_argument('--fps', type=int, help="Frames Per Second for output video file", default=10)
