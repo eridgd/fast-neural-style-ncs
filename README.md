@@ -6,7 +6,7 @@ To download a trained model checkpoint and export to a graph compatible with mvN
 
 2. `python export-graph.py`
 
-3. `mvNCCompile ncs_out/ncs.meta -in="input" -on="add_21" -s 12 -o ncs-style.meta`
+3. `mvNCCompile ncs_graph/ncs.meta -in="input" -on="add_21" -s 12 -o ncs_style.meta`
 
 
 ------
