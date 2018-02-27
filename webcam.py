@@ -28,6 +28,7 @@ parser.add_argument('--no-gui', action='store_true', help="Don't render the gui"
 parser.add_argument('--scale', type=float, help="Scale the output image", default=1)
 parser.add_argument('--zoom', type=float, help="Zoom factor", default=1)
 parser.add_argument('--keep-colors', action='store_true', help="Preserve the colors of the style image", default=False)
+parser.add_argument('--concat', action='store_true', help="Concatenate image and stylized output", default=False)
 parser.add_argument('--device', type=str,
                         dest='device', help='Device to perform compute on',
                         default='/cpu:0')
@@ -119,7 +120,11 @@ def main():
 
     if args.video_out is not None:
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter(args.video_out, fourcc, args.fps, (int(2*img_shape[1]*args.scale),int(img_shape[0]*args.scale)))
+        if args.concat:
+            shp = (int(2*img_shape[1]*args.scale),int(img_shape[0]*args.scale))
+        else:
+            shp = (int(img_shape[1]*args.scale),int(img_shape[0]*args.scale))
+        out = cv2.VideoWriter(args.video_out, fourcc, args.fps, shp)
 
     fps = FPS().start()
 
@@ -151,10 +156,11 @@ def main():
             if args.keep_colors:
                 # Preserve the color of the content image
                 styled_rgb = preserve_colors(image_rgb, styled_rgb)
-
-            # cv2.imwrite('test{}.jpg'.format(count), cv2.cvtColor(styled_rgb, cv2.COLOR_RGB2BGR))
             
-            combined_image = np.concatenate([image_rgb, styled_rgb], axis=1)
+            if args.concat:
+                combined_image = np.concatenate([image_rgb, styled_rgb], axis=1)
+            else:
+                combined_image = image_rgb
             
             combined_bgr = cv2.cvtColor(combined_image, cv2.COLOR_RGB2BGR)
                 
