@@ -160,7 +160,7 @@ def main():
             if args.concat:
                 combined_image = np.concatenate([image_rgb, styled_rgb], axis=1)
             else:
-                combined_image = image_rgb
+                combined_image = styled_rgb
             
             combined_bgr = cv2.cvtColor(combined_image, cv2.COLOR_RGB2BGR)
                 
