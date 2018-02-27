@@ -19,6 +19,8 @@ parser.add_argument('--checkpoint', type=str, help='Checkpoint directory', defau
 parser.add_argument('-d', '--downsample', type=float, default=1, help='Downsample factor')
 parser.add_argument('--video', type=str, help="Stream from input video file", default=None)
 parser.add_argument('--video-out', type=str, help="Save to output video file", default=None)
+parser.add_argument('--width', type=int, help='Webcam video width', default=None)
+parser.add_argument('--height', type=int, help='Webcam video height', default=None)
 parser.add_argument('--fps', type=int, help="Frames Per Second for output video file", default=10)
 # parser.add_argument('--skip', type=int, help="Speed up processing by skipping frames", default=0)
 parser.add_argument('--no-gui', action='store_true', help="Don't render the gui", default=False)
@@ -33,14 +35,18 @@ args = parser.parse_args()
 
 
 class WebcamVideoStream:
-    # From http://www.pyimagesearch.com/2015/12/21/increasing-webcam-fps-with-python-and-opencv/
-
-    def __init__(self, src=0):
+    '''From http://www.pyimagesearch.com/2015/12/21/increasing-webcam-fps-with-python-and-opencv/'''
+    def __init__(self, src=0, width=None, height=None):
         # initialize the video camera stream and read the first frame
         # from the stream
         self.stream = cv2.VideoCapture(src)
+
+        if width is not None and height is not None: # Both are needed to change default dims
+            self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+            self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
         (self.ret, self.frame) = self.stream.read()
- 
+
         # initialize the variable used to indicate if the thread should
         # be stopped
         self.stopped = False
@@ -100,35 +106,11 @@ class FastStyle(object):
         return img
 
 
-def luminance_only(x, y):
-    w = np.asarray([0.114, 0.587, 0.299], dtype=np.float32)
-    x_shape = x.shape
-    y_shape = y.shape
-
-    x = x.reshape(x_shape[:2] + (-1,))
-    xl = np.zeros((x.shape[0], 1, x.shape[2]), dtype=np.float32)
-    for i in range(len(x)):
-        xl[i,:] = w.dot(x[i])
-    xl_mean = np.mean(xl, axis=2, keepdims=True)
-    xl_std = np.std(xl, axis=2, keepdims=True)
-
-    y = y.reshape(y_shape[:2] + (-1,))
-    yl = np.zeros((y.shape[0], 1, y.shape[2]), dtype=np.float32)
-    for i in range(len(y)):
-        yl[i,:] = w.dot(y[i])
-    yl_mean = np.mean(yl, axis=2, keepdims=True)
-    yl_std = np.std(yl, axis=2, keepdims=True)
-
-    xl = (xl - xl_mean) / xl_std * yl_std + yl_mean
-    # return np.repeat(xl, 3, axis=1).reshape(x_shape)
-    return xl
-
-
 def main():
     if args.video is not None:
         cap = WebcamVideoStream(args.video).start()
     else:
-        cap = WebcamVideoStream(args.video_source).start()
+        cap = WebcamVideoStream(args.video_source, args.width, args.height).start()
 
     _, frame = cap.read()
     frame_resize = cv2.resize(frame, None, fx=1 / args.downsample, fy=1 / args.downsample)

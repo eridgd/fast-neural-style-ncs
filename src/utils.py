@@ -44,3 +44,25 @@ def preserve_colors(content_rgb, styled_rgb):
     styled_rgb = cv2.cvtColor(np.stack([Y_s, U_i, V_i], axis=-1), cv2.COLOR_YUV2RGB)
     return styled_rgb
 
+def luminance_only(x, y):
+    w = np.asarray([0.114, 0.587, 0.299], dtype=np.float32)
+    x_shape = x.shape
+    y_shape = y.shape
+
+    x = x.reshape(x_shape[:2] + (-1,))
+    xl = np.zeros((x.shape[0], 1, x.shape[2]), dtype=np.float32)
+    for i in range(len(x)):
+        xl[i,:] = w.dot(x[i])
+    xl_mean = np.mean(xl, axis=2, keepdims=True)
+    xl_std = np.std(xl, axis=2, keepdims=True)
+
+    y = y.reshape(y_shape[:2] + (-1,))
+    yl = np.zeros((y.shape[0], 1, y.shape[2]), dtype=np.float32)
+    for i in range(len(y)):
+        yl[i,:] = w.dot(y[i])
+    yl_mean = np.mean(yl, axis=2, keepdims=True)
+    yl_std = np.std(yl, axis=2, keepdims=True)
+
+    xl = (xl - xl_mean) / xl_std * yl_std + yl_mean
+    # return np.repeat(xl, 3, axis=1).reshape(x_shape)
+    return xl
