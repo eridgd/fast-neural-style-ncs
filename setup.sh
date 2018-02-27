@@ -2,7 +2,7 @@
 
 mkdir models
 cd models
-wget https://www.dropbox.com/s/8bc3krpgyhxslcq/kanagawa.zip?dl=1
+wget -c -O kanagawa.zip https://www.dropbox.com/s/8bc3krpgyhxslcq/kanagawa.zip?dl=1
 unzip kanagawa.zip
 
 ## Uncomment if training a model from scratch
