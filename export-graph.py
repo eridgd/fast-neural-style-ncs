@@ -3,7 +3,7 @@ from __future__ import print_function
 import argparse
 import cv2
 import numpy as np
-from src import transform, vgg
+from src import transform
 import tensorflow as tf
 import os
 
@@ -40,7 +40,7 @@ def main():
                 else:
                     raise Exception("No checkpoint found...")
             else:
-                saver.restore(sess, checkpoint_dir)
+                saver.restore(sess, options.checkpoint_dir)
 
             out_path = os.path.join(options.out_dir, 'ncs')
             saver.save(sess, out_path)
