@@ -10,6 +10,7 @@ import tensorflow as tf
 from imutils.video import FPS
 from threading import Thread
 import os
+import time
 
 
 parser = argparse.ArgumentParser()
@@ -108,12 +109,17 @@ class FastStyle(object):
 
 
 def main():
-    if args.video is not None:
-        cap = WebcamVideoStream(args.video).start()
-    else:
-        cap = WebcamVideoStream(args.video_source, args.width, args.height).start()
+    while True:  # Cam sometimes doesn't open immediately, keep trying until it's ready
+        if args.video is not None:
+            cap = WebcamVideoStream(args.video).start()
+        else:
+            cap = WebcamVideoStream(args.video_source).start()
+        _, frame = cap.read()
+        print(frame)
+        time.sleep(1)
+        if frame is not None:
+            break
 
-    _, frame = cap.read()
     frame_resize = cv2.resize(frame, None, fx=1 / args.downsample, fy=1 / args.downsample)
     img_shape = frame_resize.shape
     fast_style = FastStyle(args.checkpoint, img_shape, args.device)
