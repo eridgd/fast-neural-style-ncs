@@ -18,10 +18,14 @@ def net(image):
     return preds
 
 def _conv_layer(net, num_filters, filter_size, strides, relu=True):
-    weights_init = _conv_init_vars(net, num_filters, filter_size)
-    strides_shape = [1, strides, strides, 1]
-    net = tf.nn.conv2d(net, weights_init, strides_shape, padding='SAME')
+    # # weights_init = _conv_init_vars(net, num_filters, filter_size)
+    # # strides_shape = [1, strides, strides, 1]
+    # net = tf.nn.conv2d(net, weights_init, strides_shape, padding='SAME')
     # net = _instance_norm(net)
+
+    initializer = tf.contrib.layers.xavier_initializer_conv2d()
+    net = tf.layers.conv2d(net, filters=num_filters, kernel_size=filter_size, strides=strides, padding='SAME', kernel_initializer=initializer)
+
     net = tf.layers.batch_normalization(net, fused=True)
     if relu:
         net = tf.nn.relu(net)
@@ -29,17 +33,21 @@ def _conv_layer(net, num_filters, filter_size, strides, relu=True):
     return net
 
 def _conv_tranpose_layer(net, num_filters, filter_size, strides):
-    weights_init = _conv_init_vars(net, num_filters, filter_size, transpose=True)
+    # weights_init = _conv_init_vars(net, num_filters, filter_size, transpose=True)
 
-    batch_size, rows, cols, in_channels = [i.value for i in net.get_shape()]
-    new_rows, new_cols = int(rows * strides), int(cols * strides)
+    # batch_size, rows, cols, in_channels = [i.value for i in net.get_shape()]
+    # new_rows, new_cols = int(rows * strides), int(cols * strides)
 
-    new_shape = [batch_size, new_rows, new_cols, num_filters]
-    tf_shape = tf.stack(new_shape)
-    strides_shape = [1,strides,strides,1]
+    # new_shape = [batch_size, new_rows, new_cols, num_filters]
+    # tf_shape = tf.stack(new_shape)
+    # strides_shape = [1,strides,strides,1]
 
-    net = tf.nn.conv2d_transpose(net, weights_init, tf_shape, strides_shape, padding='SAME')
+    # net = tf.nn.conv2d_transpose(net, weights_init, tf_shape, strides_shape, padding='SAME')
     # net = _instance_norm(net)
+
+    initializer = tf.contrib.layers.xavier_initializer_conv2d()
+    net = tf.layers.conv2d_transpose(net, filters=num_filters, kernel_size=filter_size, strides=strides, padding='SAME', kernel_initializer=initializer)
+
     net = tf.layers.batch_normalization(net, fused=True)
     return tf.nn.relu(net)
 
