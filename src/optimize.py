@@ -1,13 +1,26 @@
 from __future__ import print_function
 import functools
 import vgg, pdb, time
+from keras.applications.vgg16 import VGG16
+from keras.applications.vgg16 import preprocess_input
+from keras.models import Model
 import tensorflow as tf, numpy as np, os
 import transform
 from utils import get_img
 
-STYLE_LAYERS = ('relu1_2', 'relu2_2', 'relu3_2', 'relu4_2', 'relu5_2')
-CONTENT_LAYER = 'relu4_2'
+
+STYLE_LAYERS = ['block1_conv2', 'block2_conv2', 'block3_conv3', 'block4_conv3']
+CONTENT_LAYER = 'block3_conv3'
+# STYLE_LAYERS = ('relu1_2', 'relu2_2', 'relu3_2', 'relu4_2', 'relu5_2')
+# CONTENT_LAYER = 'relu4_2'
 DEVICES = 'CUDA_VISIBLE_DEVICES'
+
+def preproc_image(image):
+    if len(image.shape) == 3:
+        image = np.expand_dims(image, 0)
+    image = np.float32(image)
+    return preprocess_input(image)      
+
 
 # np arr, np arr
 def optimize(content_targets, style_target, content_weight, style_weight,
@@ -27,19 +40,32 @@ def optimize(content_targets, style_target, content_weight, style_weight,
     style_shape = (1,) + style_target.shape
     print(style_shape)
 
-    # precompute style features
-    with tf.Graph().as_default(), tf.device('/cpu:0'), tf.Session() as sess:
-        style_image = tf.placeholder(tf.float32, shape=style_shape, name='style_image')
-        style_image_pre = vgg.preprocess(style_image)
-        net = vgg.net(vgg_path, style_image_pre)
-        style_pre = np.array([style_target])
-        for layer in STYLE_LAYERS:
-            features = net[layer].eval(feed_dict={style_image:style_pre})
+
+
+    with tf.Graph().as_default(), tf.Session() as sess:
+        vgg_model = VGG16(weights='imagenet', include_top=False)
+        print(vgg_model.summary())
+        # style_image = tf.placeholder(tf.float32, shape=style_shape, name='style_image')
+        # style_image_pre = vgg.preprocess(style_image)
+        # net = vgg.net(vgg_path, style_image_pre)
+
+        style_layers_output = [vgg_model.get_layer(l).output for l in STYLE_LAYERS]
+        
+        style_model = Model(vgg_model.input, style_layers_output)
+
+        style_image_pre = preproc_image(style_target)
+        import IPython; IPython.embed()
+
+        # Precompute style features
+        style_feats = style_model.predict(style_image_pre)
+
+        for layer, features in zip(STYLE_LAYERS, style_feats):
             features = np.reshape(features, (-1, features.shape[3]))
             gram = np.matmul(features.T, features) / features.size
             style_features[layer] = gram
 
-    with tf.Graph().as_default(), tf.Session() as sess:
+        ################
+
         X_content = tf.placeholder(tf.float32, shape=batch_shape, name="X_content")
         X_pre = vgg.preprocess(X_content)
 
@@ -48,14 +74,8 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         content_net = vgg.net(vgg_path, X_pre)
         content_features[CONTENT_LAYER] = content_net[CONTENT_LAYER]
 
-        if slow:
-            preds = tf.Variable(
-                tf.random_normal(X_content.get_shape()) * 0.256
-            )
-            preds_pre = preds
-        else:
-            preds = transform.net(X_content/255.0)
-            preds_pre = vgg.preprocess(preds)
+        preds = transform.net(X_content/255.0)
+        preds_pre = vgg.preprocess(preds)
 
         net = vgg.net(vgg_path, preds_pre)
 
