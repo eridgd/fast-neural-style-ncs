@@ -13,13 +13,17 @@ parser.add_argument('--checkpoint-dir', type=str,
                     help='checkpoint in dir', default='models/kanagawa')
 parser.add_argument('--out-dir', type=str,
                     help='dir to save checkpoint out', default='ncs_graph')
+parser.add_argument('--width', type=int,
+                    help='img width', default=224)
+parser.add_argument('--height', type=int,
+                    help='img height', default=224)
 
 
 def main():
     options = parser.parse_args()
 
     with tf.Graph().as_default():
-        img_shape = (224, 224, 3)
+        img_shape = (options.height, options.width, 3)
         
         batch_shape = (1,) + img_shape
         img_placeholder = tf.placeholder(tf.float32, shape=batch_shape,
