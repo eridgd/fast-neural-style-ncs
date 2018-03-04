@@ -6,7 +6,9 @@ To download a trained model checkpoint and export to a graph compatible with mvN
 
 2. `python export-graph.py`
 
-3. `mvNCCompile ncs_graph/ncs.meta -in="input" -on="output" -s 12 -o ncs_style.meta`
+3. `mvNCCompile bn-vgg16-style5/ncs.meta -in="input" -on="output" -s 12 -o ncs_bn.meta`
+
+4. `python webcam_ncs.py --graph ncs_bn.graph` -- Run the compiled graph on the NCS with webcam images
 
 
 ------
