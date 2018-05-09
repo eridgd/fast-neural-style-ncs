@@ -11,10 +11,14 @@ def net(image):
     resid3 = _residual_block(resid2, 3)
     resid4 = _residual_block(resid3, 3)
     resid5 = _residual_block(resid4, 3)
-    conv_t1 = _conv_tranpose_layer(resid5, 64, 3, 2)
-    conv_t2 = _conv_tranpose_layer(conv_t1, 32, 3, 2)
+    # conv_t1 = _conv_tranpose_layer(resid5, 64, 3, 2)
+    # conv_t2 = _conv_tranpose_layer(conv_t1, 32, 3, 2)
+    conv_t1_up = _upsample(resid5)
+    conv_t1 = _conv_layer(conv_t1_up, 64, 3, 1)
+    conv_t2_up = _upsample(conv_t1)
+    conv_t2 = _conv_layer(conv_t2_up, 32, 3, 1)
     conv_t3 = _conv_layer(conv_t2, 3, 9, 1, relu=False)
-    preds = tf.nn.tanh(conv_t3) * 127.5 + 127.5
+    preds = tf.nn.tanh(conv_t3) * 127.5 + 150.
     return preds
 
 def _conv_layer(net, num_filters, filter_size, strides, relu=True):
@@ -37,6 +41,21 @@ def _conv_tranpose_layer(net, num_filters, filter_size, strides):
 def _residual_block(net, filter_size=3):
     tmp = _conv_layer(net, 128, filter_size, 1)
     return net + _conv_layer(tmp, 128, filter_size, 1, relu=False)
+
+def _upsample(x):
+    shape = x.get_shape().as_list()
+
+    r1 = tf.reshape(x, [shape[0], shape[1] * shape[2], 1, shape[3]])
+    r1_l = tf.pad(r1, [[0, 0], [0, 0], [0, 1], [0, 0]])
+    r1_r = tf.pad(r1, [[0, 0], [0, 0], [1, 0], [0, 0]])
+    r2 = tf.add(r1_l, r1_r)
+    r3 = tf.reshape(r2, [shape[0], shape[1], shape[2] * 2, shape[3]])
+    r3_l = tf.pad(r3, [[0, 0], [0, 0], [0, shape[2] * 2], [0, 0]])
+    r3_r = tf.pad(r3, [[0, 0], [0, 0], [shape[2] * 2, 0], [0, 0]])
+    r4 = tf.add(r3_l, r3_r)
+    r5 = tf.reshape(r4, [shape[0], shape[1] * 2, shape[2] * 2, shape[3]])
+
+    return r5
 
 # def reduce_var(x, axis=None, keepdims=False):
 #     """Variance of a tensor, alongside the specified axis."""

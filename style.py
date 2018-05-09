@@ -97,11 +97,11 @@ def check_opts(opts):
     if opts.test or opts.test_dir:
         exists(opts.test, "test img not found!")
         exists(opts.test_dir, "test directory not found!")
-    exists(opts.vgg_path, "vgg network data not found!")
+    # exists(opts.vgg_path, "vgg network data not found!")
     assert opts.epochs > 0
     assert opts.batch_size > 0
     assert opts.checkpoint_iterations > 0
-    assert os.path.exists(opts.vgg_path)
+    # assert os.path.exists(opts.vgg_path)
     assert opts.content_weight >= 0
     assert opts.style_weight >= 0
     assert opts.tv_weight >= 0
