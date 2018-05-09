@@ -10,6 +10,7 @@ import tensorflow as tf
 from imutils.video import FPS
 from threading import Thread
 import os
+import time
 
 
 parser = argparse.ArgumentParser()
@@ -88,7 +89,7 @@ class FastStyle(object):
                                          name='img_placeholder')
 
         with tf.device(device_t):
-            self.preds = transform.net(self.img_placeholder/255.)
+            self.preds, self.resid5 = transform.net(self.img_placeholder/255.)
             saver = tf.train.Saver()
 
             if os.path.isdir(checkpoint_dir):
@@ -103,17 +104,25 @@ class FastStyle(object):
     def predict(self, X):
         X = np.expand_dims(X, 0)
         img = self.sess.run(self.preds, feed_dict={self.img_placeholder: X})
+        # r = self.sess.run(self.resid5, feed_dict={self.img_placeholder: X})
+
+        # import IPython; IPython.embed()
         img = np.clip(img[0], 0, 255).astype(np.uint8)
         return img
 
 
 def main():
-    if args.video is not None:
-        cap = WebcamVideoStream(args.video).start()
-    else:
-        cap = WebcamVideoStream(args.video_source, args.width, args.height).start()
+    while True:  # Cam sometimes doesn't open immediately, keep trying until it's ready
+        if args.video is not None:
+            cap = WebcamVideoStream(args.video).start()
+        else:
+            cap = WebcamVideoStream(args.video_source).start()
+        _, frame = cap.read()
+        print(frame)
+        time.sleep(1)
+        if frame is not None:
+            break
 
-    _, frame = cap.read()
     frame_resize = cv2.resize(frame, None, fx=1 / args.downsample, fy=1 / args.downsample)
     img_shape = frame_resize.shape
     fast_style = FastStyle(args.checkpoint, img_shape, args.device)

@@ -7,9 +7,9 @@ from argparse import ArgumentParser
 from utils import save_img, get_img, exists, list_files
 import evaluate
 
-CONTENT_WEIGHT = 7.5e0
-STYLE_WEIGHT = 1e2
-TV_WEIGHT = 2e2
+CONTENT_WEIGHT = 1.
+STYLE_WEIGHT = 5.
+TV_WEIGHT = 1e-6
 
 LEARNING_RATE = 1e-3
 NUM_EPOCHS = 2
@@ -116,6 +116,7 @@ def main():
     parser = build_parser()
     options = parser.parse_args()
     check_opts(options)
+    print(options)
 
     style_target = get_img(options.style)
     if not options.slow:
