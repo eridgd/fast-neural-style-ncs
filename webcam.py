@@ -89,7 +89,9 @@ class FastStyle(object):
                                          name='img_placeholder')
 
         with tf.device(device_t):
-            self.preds, self.resid5 = transform.net(self.img_placeholder/255.)
+            # self.preds, self.resid5 = transform.net(self.img_placeholder/255.)
+            self.preds = transform.net(self.img_placeholder/255.)
+
             saver = tf.train.Saver()
 
             if os.path.isdir(checkpoint_dir):

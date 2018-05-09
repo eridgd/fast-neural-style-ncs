@@ -15,7 +15,7 @@ def net(image):
     conv_t2 = _conv_tranpose_layer(conv_t1, 32, 3, 2)
     conv_t3 = _conv_layer(conv_t2, 3, 9, 1, relu=False)
     preds = tf.nn.tanh(conv_t3) * 127.5 + 127.5
-    return preds, conv_t3
+    return preds
 
 def _conv_layer(net, num_filters, filter_size, strides, relu=True):
     initializer = tf.contrib.layers.xavier_initializer_conv2d()
