@@ -18,7 +18,7 @@ parser.add_argument('--out-dir', type=str,
 def main():
     options = parser.parse_args()
 
-    with tf.Graph().as_default():
+    with tf.Graph().as_default() as g:
         img_shape = (224, 224, 3)
         
         batch_shape = (1,) + img_shape
@@ -48,6 +48,8 @@ def main():
             print("Saved to:", out_path + '.meta')
             print('Input tensor name:', img_placeholder.name)
             print('Output tensor name:', output.name)
+        
+        tf.summary.FileWriter("tbgraph", g).close()
 
 
 if __name__ == '__main__':
