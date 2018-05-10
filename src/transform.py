@@ -19,7 +19,8 @@ def net(image):
     conv_t2 = _conv_layer(conv_t2_up, 32, 3, 1)
     conv_t3 = _conv_layer(conv_t2, 3, 9, 1, relu=False)
     # preds = tf.nn.tanh(conv_t3) * 127.5 + 150.
-    preds = conv_t3
+    # preds = conv_t3
+    preds = tf.nn.sigmoid(conv_t3) * 255.
     return preds
 
 def _conv_layer(net, num_filters, filter_size, strides, relu=True):
