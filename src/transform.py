@@ -48,11 +48,11 @@ def _upsample(x):
     r1 = tf.reshape(x, [shape[0], shape[1] * shape[2], 1, shape[3]])
     r1_l = tf.pad(r1, [[0, 0], [0, 0], [0, 1], [0, 0]])
     r1_r = tf.pad(r1, [[0, 0], [0, 0], [1, 0], [0, 0]])
-    r2 = tf.add(r1_l, r1_r)
+    r2 = r1_l + r1_r
     r3 = tf.reshape(r2, [shape[0], shape[1], shape[2] * 2, shape[3]])
     r3_l = tf.pad(r3, [[0, 0], [0, 0], [0, shape[2] * 2], [0, 0]])
     r3_r = tf.pad(r3, [[0, 0], [0, 0], [shape[2] * 2, 0], [0, 0]])
-    r4 = tf.add(r3_l, r3_r)
+    r4 = r3_l + r3_r
     r5 = tf.reshape(r4, [shape[0], shape[1] * 2, shape[2] * 2, shape[3]])
 
     return r5
