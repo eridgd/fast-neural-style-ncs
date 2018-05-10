@@ -72,6 +72,8 @@ def optimize(content_targets, style_target, content_weight, style_weight,
         content_features_X = content_model(X_content)
         
         preds = transform.net(X_content/255.)
+        preds = tf.clip_by_value(preds*255, 0., 255.)
+        # preds = tf.cast(tf.cast(preds*255., tf.int32), tf.float32)
         preds_pre = vgg.preprocess(preds)
 
         # Run preds_pre through content model
@@ -154,6 +156,7 @@ def optimize(content_targets, style_target, content_weight, style_weight,
 
                     saver = tf.train.Saver()
                     res = saver.save(sess, save_path, global_step=global_step)
+                    _preds = np.uint8(_preds*255)
                     yield(_preds, losses, iterations, epoch)
 
 def _tensor_size(tensor):
